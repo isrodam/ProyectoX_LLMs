@@ -1,0 +1,19 @@
+# # Git Ignore Configuration for Digital Content Project
+
+# Python internal files and caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Environmental variables and secret keys
+.env
+*.env
+
+# Virtual environments (uv / venv)
+.venv/
+.virtualenv/
+
+# UV internal project configuration files
+.python-version

@@ -1,0 +1,7 @@
+[project]
+name = "project-x-llms"
+version = "0.1.0"
+description = "An AI-powered automated content generation system designed for Digital Content, tailoring text and media across multiple platforms and audiences"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = []
