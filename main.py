@@ -1,5 +1,15 @@
+# Import packages for environment variables
 import os
 from dotenv import load_dotenv
+
+# Import LangChain core prompt templates
+from langchain_core.prompts import (
+    ChatPromptTemplate,
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate
+)
+
+# Import LangChain Groq integration
 from langchain_groq import ChatGroq
 
 # # Digital Content LLM Connection Pipeline
@@ -15,26 +25,65 @@ def main():
         raise ValueError("CRITICAL ERROR: GROQ_API_KEY is missing from the environment configuration.")
         
     # Initialize the LangChain ChatGroq model client with standard configuration
-    # Using llama3-8b-8192 for high-speed performance and low latency during live demos
     llm = ChatGroq(
         model="llama-3.1-8b-instant",
         temperature=0.7,
         groq_api_key=api_key
     )
     
-    # Define a simple prompt execution to test end-to-end data pipeline connectivity
-    test_prompt = "Generate a short, 1-sentence welcome message for a professional Data Engineering portfolio."
+    # Define corporate brand identity context
+    brand_context = {
+        "brand_name": "Digital Content Marketing S.L.",
+        "brand_industry": "Digital Marketing and Social Media Growth",
+        "brand_tone": "Professional, engaging, authoritative yet accessible"
+    }
+
+    # Construct the system message template with brand boundaries
+    system_template = (
+        "You are an expert copywriter and content strategist working for {brand_name}, "
+        "a company specialized in the {brand_industry} sector.\n\n"
+        "Your objective is to generate high-quality, high-converting social media content. "
+        "You must strictly adhere to the company's official tone of voice: {brand_tone}.\n"
+        "Always respond in the language requested or default to Spanish if not specified."
+    )
+
+    system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
+
+    # Construct the human message template with dynamic input variables
+    human_template = (
+        "Please generate a tailored post about the following topic: '{topic}'.\n"
+        "Target Platform: {platform}\n"
+        "Target Audience: {audience}\n\n"
+        "Ensure the post structure, length, and hashtag strategy match the best practices "
+        "of the specified platform."
+    )
+
+    human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
+
+    # Combine both templates into a single chat prompt layout
+    chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
     
-    print("Sending request to Groq API via LangChain...")
-    
-    # Invoke the model synchronously and capture the structured AI response
-    response = llm.invoke(test_prompt)
-    
-    # Print the resulting content text delivered by the LLM
-    print("\n--- LLM Response Received ---")
+    # Define placeholder variables simulating future frontend user inputs
+    user_inputs = {
+        "topic": "The importance of automated data pipelines in modern startups",
+        "platform": "LinkedIn",
+        "audience": "Tech Founders and Chief Technology Officers (CTOs)"
+    }
+
+    # Merge brand identity and user selection dictionaries into a single input payload
+    # This matches all placeholders defined within both system and human templates
+    full_prompt_inputs = {**brand_context, **user_inputs}
+
+    print("Formatting dynamic templates and sending data pipeline payload to Groq...")
+
+    # Format the template with the combined dictionary payload and invoke the LLM
+    formatted_prompt = chat_prompt.format_prompt(**full_prompt_inputs)
+    response = llm.invoke(formatted_prompt.to_messages())
+
+    # Print the custom AI-generated marketing content delivered by the LLM
+    print("\n--- Custom LLM Content Response Received ---")
     print(response.content)
-    print("------------------------------")
+    print("--------------------------------------------")
 
 if __name__ == "__main__":
-    # Execute the technical connection test pipeline
     main()
