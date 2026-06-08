@@ -1,118 +1,110 @@
-# Import packages for environment variables
 import os
 from dotenv import load_dotenv
-
-# Import LangChain core prompt templates
 from langchain_core.prompts import (
     ChatPromptTemplate,
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate
 )
-
-# Import LangChain Groq integration
 from langchain_groq import ChatGroq
 
-# # Digital Content LLM Connection Pipeline
-# This script initializes environmental variables and tests the connection to the Groq API using LangChain.
-
-# # Content Generation Core Engine Pipeline
-# This function isolates the LangChain prompt engineering logic from environment orchestrators.
-def generate_social_media_content(brand_name, brand_industry, brand_tone, topic, platform, audience):
+# # Core Pipeline Logic for Parametric Prompting
+def generate_social_media_content(brand_name, brand_industry, brand_tone, topic, platform, audience, temperature, language, length):
     """
     Formulates structured templates and orchestrates communication with the Groq API
-    to deliver tailored corporate social media copy.
+    to deliver tailored corporate social media copy incorporating advanced parameters.
     """
-    # Retrieve the API key inside the function scope to handle connections securely
-    import os
+    # Verify environment key validation before model instantiation
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise ValueError("CRITICAL ERROR: GROQ_API_KEY is missing from the environment configuration.")
 
-    # Initialize the LangChain ChatGroq model client with standard configuration
+    # Initialize ChatGroq client mapping explicit temperature controls from backend args
     llm = ChatGroq(
         model="llama-3.1-8b-instant",
-        temperature=0.7,
+        temperature=temperature,
         groq_api_key=api_key
     )
 
-    # Construct the system message template with brand boundaries
+    # Formulate System instructions bounding professional identities and mandatory output languages
     system_template = (
         "You are an expert copywriter and content strategist working for {brand_name}, "
         "a company operating in the following sector: {brand_industry}.\n"
         "Your sole task is to design high-converting, highly engaging social media content. \n"
         "You must strictly adhere to the company's official tone of voice: {brand_tone}.\n"
-        "Always respond in the language requested or default to Spanish if not specified."
+        "CRITICAL REQUIREMENT: You must write the entire post strictly in the following language: {language}."
     )
     system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
 
-    # Construct the human message template with dynamic input variables
+    # Formulate User prompt schemas restricting payload topic metrics and required copy lengths
     human_template = (
         "Please generate a tailored post about the following topic: '{topic}'.\n"
         "Target Platform: {platform}\n"
-        "Target Audience: {audience}\n\n"
+        "Target Audience: {audience}\n"
+        "Requested Post Length: {length}\n\n"
         "Ensure the post structure, length, and hashtag strategy match the best practices "
-        "of the specified platform."
+        "of the specified platform, adhering tightly to the requested post length."
     )
     human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
 
-    # Combine both templates into a single chat prompt layout
+    # Assemble comprehensive prompt layers into unified LangChain message chains
     chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
 
-    # Consolidate all parameters into a unified input payload for template injection
+    # Inject UI input arguments inside parameter placeholders
     full_prompt_inputs = {
         "brand_name": brand_name,
         "brand_industry": brand_industry,
         "brand_tone": brand_tone,
         "topic": topic,
         "platform": platform,
-        "audience": audience
+        "audience": audience,
+        "language": language,
+        "length": length
     }
 
-    # Format the template with the combined payload and invoke the LLM
+    # Format localized chat strings and trigger LLM generation workflows
     formatted_prompt = chat_prompt.format_prompt(**full_prompt_inputs)
     response = llm.invoke(formatted_prompt.to_messages())
-
-    # Return the raw generated string content to the execution coordinator
     return response.content
 
-
-# # Execution Coordinator
-# Main orchestrator acting as a simulated interface to test localized processing pipelines.
+# # Local Execution Test Suite
 def main():
-    # Load environment variables from the local secure .env file
     load_dotenv()
-
-    # Define corporate brand identity context
+    
+    # Mocking environment metadata dictionary variables
     brand_context = {
         "brand_name": "Digital Content Marketing S.L.",
         "brand_industry": "Digital Marketing and Social Media Growth",
         "brand_tone": "Professional, engaging, authoritative yet accessible"
     }
-
-    # Define placeholder variables simulating future frontend user inputs
+    
+    # Mocking localized application interface parameter states
     user_inputs = {
         "topic": "The importance of automated data pipelines in modern startups",
         "platform": "LinkedIn",
-        "audience": "Tech Founders and Chief Technology Officers (CTOs)"
+        "audience": "Tech Founders and Chief Technology Officers (CTOs)",
+        "temperature": 0.7,
+        "language": "Español",
+        "length": "Mediano (~150 palabras)"
     }
 
     print("Formatting parametric arguments and triggering the LangChain pipeline...")
-
-    # Execute the core function passing explicit arguments unpacked from dictionaries
+    
+    # Invoke the operational production generator logic wrapper
     generated_post = generate_social_media_content(
         brand_name=brand_context["brand_name"],
         brand_industry=brand_context["brand_industry"],
         brand_tone=brand_context["brand_tone"],
         topic=user_inputs["topic"],
         platform=user_inputs["platform"],
-        audience=user_inputs["audience"]
+        audience=user_inputs["audience"],
+        temperature=user_inputs["temperature"],
+        language=user_inputs["language"],
+        length=user_inputs["length"]
     )
-
-    # Print the custom AI-generated marketing content delivered by the core pipeline
+    
     print("\n--- Parametric LLM Content Response Received ---")
     print(generated_post)
     print("-------------------------------------------------")
-
 
 if __name__ == "__main__":
     main()
