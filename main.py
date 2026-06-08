@@ -1,4 +1,5 @@
 import os
+import requests
 from dotenv import load_dotenv
 from langchain_core.prompts import (
     ChatPromptTemplate,
@@ -7,7 +8,7 @@ from langchain_core.prompts import (
 )
 from langchain_groq import ChatGroq
 
-# # Core Pipeline Logic for Parametric Prompting
+# Core Pipeline Logic for Parametric Prompting
 def generate_social_media_content(brand_name, brand_industry, brand_tone, topic, platform, audience, temperature, language, length):
     """
     Formulates structured templates and orchestrates communication with the Groq API
@@ -30,47 +31,155 @@ def generate_social_media_content(brand_name, brand_industry, brand_tone, topic,
         "You are an expert copywriter and content strategist working for {brand_name}, "
         "a company operating in the following sector: {brand_industry}.\n"
         "Your sole task is to design high-converting, highly engaging social media content. \n"
-        "You must strictly adhere to the company's official tone of voice: {brand_tone}.\n"
-        "CRITICAL REQUIREMENT: You must write the entire post strictly in the following language: {language}."
+        "You must strictly adhere to the company's brand tone of voice: {brand_tone}.\n"
+        "CRITICAL RULE: The final output MUST be written entirely and exclusively in {language}. "
+        "Do not mix languages under any circumstance."
     )
+    
     system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
 
-    # Formulate User prompt schemas restricting payload topic metrics and required copy lengths
+    # Formulate Human dynamic content specifications and explicit text lengths
     human_template = (
-        "Please generate a tailored post about the following topic: '{topic}'.\n"
-        "Target Platform: {platform}\n"
-        "Target Audience: {audience}\n"
-        "Requested Post Length: {length}\n\n"
-        "Ensure the post structure, length, and hashtag strategy match the best practices "
-        "of the specified platform, adhering tightly to the requested post length."
+        "Generate a piece of social media content tailored for the following platform: {platform}.\n"
+        "Target Audience: {audience}.\n"
+        "Topic of the Post: {topic}.\n"
+        "Desired Text Length: {length}.\n"
+        "Requirements:\n"
+        "1. Write compelling copy tailored to the audience's pain points and interests.\n"
+        "2. Include appropriate, professional emojis to maximize visual engagement.\n"
+        "3. Provide 3 to 5 highly relevant, strategic hashtags at the very end of the post."
     )
+    
     human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
 
-    # Assemble comprehensive prompt layers into unified LangChain message chains
+    # Combine both templates into a single chat prompt layout array
     chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
 
-    # Inject UI input arguments inside parameter placeholders
-    full_prompt_inputs = {
-        "brand_name": brand_name,
-        "brand_industry": brand_industry,
-        "brand_tone": brand_tone,
-        "topic": topic,
-        "platform": platform,
-        "audience": audience,
-        "language": language,
-        "length": length
+    # Format the messages injecting the contextual parameters safely
+    formatted_messages = chat_prompt.format_prompt(
+        brand_name=brand_name,
+        brand_industry=brand_industry,
+        brand_tone=brand_tone,
+        topic=topic,
+        platform=platform,
+        audience=audience,
+        language=language,
+        length=length
+    ).to_messages()
+
+    # Invoke the model synchronously and capture the structured AI response
+    response = llm.invoke(formatted_messages)
+    post_content = response.content.strip()
+
+    # Trigger the downstream pipeline to extract relevant visual keywords from the generated text
+    visual_keywords = extract_visual_keywords(post_content)
+    
+    # Query the external Pexels API using the keywords to capture a matching image asset URL
+    image_url = fetch_trending_stock_image(visual_keywords)
+
+    # Return a structured tuple containing both the copywriting text and the media resource link
+    return post_content, image_url
+
+
+# This function uses a low temperature LLM instance to extract clean visual keywords from a post
+def extract_visual_keywords(post_content):
+    """
+    Analyzes the generated post content and extracts 2-3 specific English keywords
+    suitable for querying a professional stock imagery API.
+    """
+    # Initialize a strict, low-creativity ChatGroq instance for precise data extraction
+    llm_extractor = ChatGroq(
+        temperature=0.0,
+        model_name="llama-3.1-8b-instant"
+    )
+    
+    # Define the system prompt with strict structural rules and language constraints
+    system_template = (
+        "You are a strict visual data extraction assistant.\n"
+        "Your sole task is to analyze the provided text and extract 2 to 3 specific keywords or short concepts.\n"
+        "Rules:\n"
+        "1. The keywords MUST be in English, regardless of the input text language.\n"
+        "2. The keywords MUST be concrete nouns or clear visual concepts suitable for finding professional stock photos.\n"
+        "3. Output ONLY the keywords separated by commas (e.g., office, technology, growth).\n"
+        "4. Do NOT include any introductory text, bullet points, numbering, or explanations."
+    )
+    
+    system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)
+    
+    # Define the human prompt placeholder to ingest the generated copywriting post
+    human_template = "Extract visual keywords from the following text:\n\n{post_content}"
+    human_message_prompt = HumanMessagePromptTemplate.from_template(human_template)
+    
+    # Orchestrate the LangChain prompt layout array
+    chat_prompt = ChatPromptTemplate.from_messages([system_message_prompt, human_message_prompt])
+    
+    # Format the prompts with the actual content received by the function
+    formatted_messages = chat_prompt.format_prompt(post_content=post_content).to_messages()
+    
+    # Invoke the model synchronously and extract the raw string response
+    response = llm_extractor.invoke(formatted_messages)
+    raw_keywords = response.content.strip()
+    
+    # Process the comma-separated string into a clean Python list of keywords
+    keyword_list = [kw.strip() for kw in raw_keywords.split(",") if kw.strip()]
+    
+    return keyword_list
+
+
+# This function queries the Pexels API using the extracted keywords to find a relevant image URL
+def fetch_trending_stock_image(keywords):
+    """
+    Iterates through a list of visual keywords, performs an HTTP GET request to the Pexels API,
+    and extracts the direct URL of the first high-quality matching image asset.
+    """
+    # Retrieve the secure API credentials from the environment space
+    pexels_api_key = os.getenv("PEXELS_API_KEY")
+    
+    # If the key is missing, log a warning and exit early to prevent pipeline crashes
+    if not pexels_api_key:
+        print("Warning: PEXELS_API_KEY environment variable is missing or empty.")
+        return None
+        
+    url = "https://api.pexels.com/v1/search"
+    
+    # Configure secure authorization headers according to Pexels documentation guidelines
+    headers = {
+        "Authorization": pexels_api_key
     }
+    
+    # Loop through keywords to find the first valid image matching our conceptual framework
+    for query in keywords:
+        params = {
+            "query": query,
+            "per_page": 1  # We only need one precise top-matching resource
+        }
+        
+        try:
+            # Perform the synchronous HTTP request out to the external endpoint
+            response = requests.get(url, headers=headers, params=params, timeout=10)
+            
+            # Validate that the server handshake returned an optimal success code (200 OK)
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Verify that the search actually found available image objects inside the payload
+                if data.get("photos") and len(data["photos"]) > 0:
+                    # Drill down into the JSON dictionary architecture to capture the target media URL
+                    target_image_url = data["photos"][0]["src"]["large"]
+                    return target_image_url
+                    
+        except Exception as e:
+            # Silently log network or connection faults without halting backend processing
+            print(f"Network exception encountered while searching for '{query}': {e}")
+            
+    return None
 
-    # Format localized chat strings and trigger LLM generation workflows
-    formatted_prompt = chat_prompt.format_prompt(**full_prompt_inputs)
-    response = llm.invoke(formatted_prompt.to_messages())
-    return response.content
 
-# # Local Execution Test Suite
-def main():
+# Orchestrate local script environment loading and runtime diagnostics execution
+if __name__ == "__main__":
     load_dotenv()
     
-    # Mocking environment metadata dictionary variables
+    # Initialize global environment metadata dictionary variables
     brand_context = {
         "brand_name": "Digital Content Marketing S.L.",
         "brand_industry": "Digital Marketing and Social Media Growth",
@@ -89,8 +198,8 @@ def main():
 
     print("Formatting parametric arguments and triggering the LangChain pipeline...")
     
-    # Invoke the operational production generator logic wrapper
-    generated_post = generate_social_media_content(
+    # Invoke the operational production generator logic wrapper (unpacking the resulting tuple)
+    generated_post, image_url = generate_social_media_content(
         brand_name=brand_context["brand_name"],
         brand_industry=brand_context["brand_industry"],
         brand_tone=brand_context["brand_tone"],
@@ -104,7 +213,6 @@ def main():
     
     print("\n--- Parametric LLM Content Response Received ---")
     print(generated_post)
+    print("\n--- Automated Matching Asset URL Captured ---")
+    print(f"Image Link: {image_url}")
     print("-------------------------------------------------")
-
-if __name__ == "__main__":
-    main()
