@@ -93,15 +93,15 @@ def extract_visual_keywords(post_content):
         model_name="llama-3.1-8b-instant"
     )
     
-    # Define the system prompt with strict structural rules and language constraints
+    # Define a strict system prompt focusing on single visual concepts to optimize external search rates
     system_template = (
         "You are a strict visual data extraction assistant.\n"
-        "Your sole task is to analyze the provided text and extract 2 to 3 specific keywords or short concepts.\n"
+        "Your sole task is to analyze the provided text and extract 2 to 3 single, concrete nouns for image indexing.\n"
         "Rules:\n"
-        "1. The keywords MUST be in English, regardless of the input text language.\n"
-        "2. The keywords MUST be concrete nouns or clear visual concepts suitable for finding professional stock photos.\n"
-        "3. Output ONLY the keywords separated by commas (e.g., office, technology, growth).\n"
-        "4. Do NOT include any introductory text, bullet points, numbering, or explanations."
+        "1. The keywords MUST be single words in English (e.g., 'warehouse', 'robot', 'office', 'computer', 'truck').\n"
+        "2. The keywords MUST be highly visual, tangible objects representing the core business or context.\n"
+        "3. Output ONLY the keywords separated by commas, with no punctuation other than commas.\n"
+        "4. Do NOT include any introductory text, quotes, explanations, or compound sentences."
     )
     
     system_message_prompt = SystemMessagePromptTemplate.from_template(system_template)

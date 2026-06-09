@@ -27,46 +27,52 @@ with st.sidebar:
         """
         <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; border-left: 5px solid #4A90E2; margin-bottom: 20px;">
             <h4 style="margin-top:0; color: #1E3A8A; font-size: 1.1rem;">🏢 Identidad de Marca</h4>
-            <p style="font-size: 0.8rem; color: #555; margin-bottom:0;">Configura el contexto base de la empresa para orientar a la IA.</p>
+            <p style="font-size: 0.8rem; color: #555; margin-bottom: 10px;">Configura el contexto base de la empresa para orientar a la IA.</p>
         </div>
-        """, 
+        """,
         unsafe_allow_html=True
     )
     
-    brand_name = st.text_input("📋 Nombre de la Marca", value="Digital Content Marketing S.L.")
-    brand_industry = st.text_input("🏭 Sector de la Empresa", value="Marketing Digital y Crecimiento en Redes Sociales")
-    brand_tone = st.text_input("🗣️ Tono de Voz", value="Profesional, atractivo, autoritario pero accesible")
+    brand_name = st.text_input("Nombre de la Marca:", value="Digital Content Marketing S.L.")
+    brand_industry = st.text_input("Sector de la Empresa:", value="Marketing Digital y Crecimiento en Redes")
+    brand_tone = st.text_area(
+        "Tono de Voz:",
+        value="Profesional, atractivo, autoritario pero accesible y enfocado en aportar valor técnico."
+    )
     
-    # Section 2: Model advanced configuration inputs
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Section 2: Advanced Technical Model Hyperparameters
     st.markdown(
         """
-        <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; border-left: 5px solid #FF9F43; margin-top: 20px; margin-bottom: 20px;">
-            <h4 style="margin-top:0; color: #A04000; font-size: 1.1rem;">⚙️ Configuración Avanzada</h4>
-            <p style="font-size: 0.8rem; color: #555; margin-bottom:0;">Ajusta el comportamiento del modelo de lenguaje.</p>
+        <div style="background-color: #f0f2f6; padding: 15px; border-radius: 10px; border-left: 5px solid #10B981; margin-bottom: 20px;">
+            <h4 style="margin-top:0; color: #065F46; font-size: 1.1rem;">⚙️ Configuración Avanzada</h4>
+            <p style="font-size: 0.8rem; color: #555; margin-bottom: 10px;">Ajusta el comportamiento del modelo de lenguaje.</p>
         </div>
-        """, 
+        """,
         unsafe_allow_html=True
     )
     
-    temperature = st.slider("🌡️ Temperatura (Creatividad)", min_value=0.0, max_value=1.0, value=0.7, step=0.1)
-    language = st.selectbox("🌐 Idioma de Destino", ["Español", "Inglés", "Portugués", "Francés", "Alemán"])
-    length = st.selectbox("📏 Longitud del Post", ["Corto (~50 palabras)", "Mediano (~150 palabras)", "Largo (~300 palabras)"])
+    temperature = st.slider("Temperatura (Creatividad):", min_value=0.0, max_value=1.0, value=0.7, step=0.05)
 
-# Main interface layout: Post specifications and workspace setup
-st.info("📝 **Área de Trabajo:** Define los parámetros específicos del post que deseas generar a continuación.")
+# Main Workspace Layout for post context ingestion
+st.markdown("### 📝 Área de Trabajo")
+st.info("Define los parámetros específicos del post que deseas generar a continuación.")
 
-topic = st.text_area("✍️ ¿Cuál es el tema de tu publicación?", placeholder="Ej. La importancia de las tuberías de datos automatizadas en empresas emergentes")
+# Structural arrangement using dual columns for the main form factors
+col_input1, col_input2 = st.columns(2)
 
-col1, col2 = st.columns(2)
-
-with col1:
-    platform = st.selectbox(
-        "📱 Plataforma de Destino",
-        ["LinkedIn", "Twitter/X", "Instagram", "Artículo de Blog"]
+with col_input1:
+    topic = st.text_area(
+        "¿Cuál es el tema de tu publicación?",
+        placeholder="Ej. La importancia de las tuberías de datos automatizadas en empresas emergentes"
     )
+    platform = st.selectbox("Plataforma de Destino:", ["LinkedIn", "Twitter/X", "Instagram", "Facebook"])
 
-with col2:
-    audience = st.text_input("🎯 Público Objetivo", value="Fundadores Tecnológicos y Directores de Tecnología (CTOs)")
+with col_input2:
+    language = st.selectbox("Idioma de Destino:", ["Español", "English", "Français"])
+    length = st.selectbox("Longitud del Post:", ["Corto (~50 palabras)", "Mediano (~150 palabras)", "Largo (~300 palabras)"])
+    audience = st.text_input("Público Objetivo:", value="Fundadores Tecnológicos y Directores de Tecnología (CTOs)")
 
 st.write("") 
 
@@ -81,7 +87,8 @@ if st.button("✨ Generar Publicación de Alto Impacto", use_container_width=Tru
             st.write("🔗 Conectando con el pipeline modular...")
             st.write("🧠 Inyectando variables avanzadas y de marca...")
             
-            generated_post = generate_social_media_content(
+            # Apply Python tuple unpacking to capture both individual data streams from the backend execution
+            post_text, image_url = generate_social_media_content(
                 brand_name=brand_name,
                 brand_industry=brand_industry,
                 brand_tone=brand_tone,
@@ -94,7 +101,21 @@ if st.button("✨ Generar Publicación de Alto Impacto", use_container_width=Tru
             )
             status.update(label="🎉 ¡Contenido optimizado por Llama 3.1 con éxito!", state="complete", expanded=False)
             
-        # UI visualization block for the final generated output string
+        # UI visualization block for the final generated multi-modal content layout
         st.markdown("### 📋 Copiar Contenido Generado")
         with st.container(border=True):
-            st.markdown(generated_post)
+            # Instantiate a balanced two-column structural layout wrapper (50% / 50%)
+            col1, col2 = st.columns([1, 1])
+            
+            # Left Column: Defensive multi-modal rendering for the automated stock photo asset
+            with col1:
+                if image_url:
+                    # Render the dynamic media asset URL securely to block red syntax faults
+                    st.image(image_url, use_container_width=True, caption=f"Visual asset fetched for: {topic}")
+                else:
+                    # Fallback visual state if the Pexels search loop yielded no matching resources
+                    st.info("ℹ️ No se encontró una imagen de stock idónea para este tema de publicación.")
+            
+            # Right Column: Presenting the high-converting copy output and strategic hashtags
+            with col2:
+                st.markdown(post_text)
