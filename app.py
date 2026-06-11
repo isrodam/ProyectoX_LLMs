@@ -85,10 +85,10 @@ if st.button("✨ Generar Publicación de Alto Impacto", use_container_width=Tru
         # Contextual loader container for rendering API processing workflows
         with st.status("🤖 El motor de IA está procesando los prompts paramétricos...", expanded=True) as status:
             st.write("🔗 Conectando con el pipeline modular...")
-            st.write("🧠 Inyectando variables avanzadas y de marca...")
+            st.write("🧠 Extrayendo términos visuales del post...")
             
-            # Apply Python tuple unpacking to capture both individual data streams from the backend execution
-            post_text, image_url = generate_social_media_content(
+            # Unpack the complete 4-element data tuple returned by main.py
+            generated_post, image_url, keywords, photographer = generate_social_media_content(
                 brand_name=brand_name,
                 brand_industry=brand_industry,
                 brand_tone=brand_tone,
@@ -104,18 +104,26 @@ if st.button("✨ Generar Publicación de Alto Impacto", use_container_width=Tru
         # UI visualization block for the final generated multi-modal content layout
         st.markdown("### 📋 Copiar Contenido Generado")
         with st.container(border=True):
-            # Instantiate a balanced two-column structural layout wrapper (50% / 50%)
+            # Balanced two-column structural layout wrapper (Texto Izquierda / Imagen Derecha)
             col1, col2 = st.columns([1, 1])
             
-            # Left Column: Defensive multi-modal rendering for the automated stock photo asset
+            # Left Column: Copywriting content display
             with col1:
-                if image_url:
-                    # Render the dynamic media asset URL securely to block red syntax faults
-                    st.image(image_url, use_container_width=True, caption=f"Visual asset fetched for: {topic}")
-                else:
-                    # Fallback visual state if the Pexels search loop yielded no matching resources
-                    st.info("ℹ️ No se encontró una imagen de stock idónea para este tema de publicación.")
+                st.markdown(generated_post)
             
-            # Right Column: Presenting the high-converting copy output and strategic hashtags
+            # Right Column: Visual stock asset rendering and keywords tracking
             with col2:
-                st.markdown(post_text)
+                if image_url:
+                    # Enforced image width to preserve proportional dimensions
+                    st.image(image_url, width=400)
+                    # Clean legal citation signature
+                    st.caption(f"📷 Foto por **{photographer}** en Pexels")
+                    
+                    st.write("")
+                    # Metadata provenance tracing container utilizing dynamic pills
+                    st.markdown("##### 🔍 Búsqueda Semántica de Imagen")
+                    # Parse comma-separated keyword string into a clean Python list
+                    list_of_keys = [k.strip() for k in keywords.split(",") if k.strip()]
+                    st.pills("Términos extraídos por la IA:", list_of_keys)
+                else:
+                    st.info("ℹ️ No se encontró una imagen de stock idónea para este tema de publicación.")
