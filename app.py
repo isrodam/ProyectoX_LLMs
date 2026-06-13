@@ -176,6 +176,6 @@ with tab_history:
                         
                         st.write("")
                         h_keys = [k.strip() for k in item["keywords"].split(",") if k.strip()]
-                        st.pills(f"Keywords utilizadas:", h_keys)
+                        st.pills(f"Keywords utilizadas:", h_keys, key=f"pills_{'-'.join(h_keys)}")
                 
                 st.markdown("<hr style='border:0.5px dashed #ccc; margin: 15px 0;'>", unsafe_allow_html=True)

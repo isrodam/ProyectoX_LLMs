@@ -1,0 +1,22 @@
+# --- DEVELOPMENT ENVIRONMENT EXCLUSIONS ---
+# Prevent the local virtual environment dependencies from bloating the container
+.venv/
+venv/
+ENV/
+
+# --- CREDENTIAL AND SECURITY OVERRIDES ---
+# Strictly exclude local infrastructure keys and environment variables to maintain compliance
+.env
+
+# --- PYTHON RUNTIME CACHE ---
+# Ignore interpreted compilation structures and caching layers
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- SYSTEM AND IDE METADATA ---
+# Dismiss local workspace configurations and environment histories
+.vscode/
+.git/
+.gitignore
