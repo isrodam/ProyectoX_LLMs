@@ -3,9 +3,13 @@ name = "project-x-llms"
 version = "0.1.0"
 description = "An AI-powered automated content generation system designed for Digital Content, tailoring text and media across multiple platforms and audiences"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = [
+    "groq>=0.37.1",
+    "langchain>=1.3.9",
+    "langchain-community>=0.4.2",
     "langchain-groq>=1.1.2",
+    "langchain-openai>=1.3.2",
     "python-dotenv>=1.2.2",
     "streamlit>=1.58.0",
 ]
