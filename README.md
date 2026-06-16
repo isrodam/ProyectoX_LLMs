@@ -73,3 +73,5 @@ Una vez levantado el servicio, accede directamente desde cualquier navegador web
 🎓 Propósito Educativo
 
     ⚠️ Nota legal: Este proyecto ha sido desarrollado exclusivamente con fines educativos y de investigación técnica en el ámbito del despliegue de soluciones de Inteligencia Artificial y Data Engineering dentro del marco formativo del bootcamp. Las herramientas, arquitecturas y claves de acceso empleadas se configuran bajo entornos controlados de simulación de prácticas profesionales.
+
+##
