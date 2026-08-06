@@ -70,6 +70,37 @@ Una vez levantado el servicio, accede directamente desde cualquier navegador web
 
     Robustez de Identificadores (UI Stability): Resolución de conflictos de duplicados en la vista del historial. Se implementó una inyección de claves dinámicas únicas basadas en texto indexado (key=f"pills_{'-'.join(h_keys)}") en el componente st.pills, permitiendo múltiples peticiones recurrentes sobre los mismos tópicos y sectores comerciales sin degradación de la interfaz de Streamlit.
 
+## 📸 Capturas de pantalla
+
+### Panel de control
+Interfaz principal donde se configura la identidad de marca y los parámetros de la publicación.
+
+![Panel de control](screenshots/panel-control.jpg)
+
+### Contenido generado
+Ejemplo de publicación generada automáticamente, con texto, hashtags e imagen relacionada (búsqueda semántica vía API de Pexels).
+
+![Ejemplo de contenido generado](screenshots/ejemplo-generado.jpg)
+
+### Soporte multiidioma
+El generador adapta el contenido al idioma solicitado (aquí, francés).
+
+![Generación en francés](screenshots/multiidioma.jpg)
+
+### Historial de sesión
+Registro de publicaciones generadas durante la sesión activa, con posibilidad de consultarlas de nuevo.
+
+![Historial de publicaciones](screenshots/historial.jpg)
+
+### Arquitectura del sistema
+
+| Capa de Arquitectura | Tecnología | Función |
+| --- | --- | --- |
+| 1. Infraestructura y Portabilidad | Docker | Empaqueta la aplicación y dependencias para un despliegue agnóstico. |
+| 2. Interfaz y Estado (Frontend) | Streamlit | Captura entradas del usuario y gestiona la persistencia con `st.session_state`. |
+| 3. Orquestación e IA (Backend) | LangChain + ChatGroq | Modula los prompts dinámicos invocando al modelo `llama-3.1-8b-instant`. |
+| 4. Integración de Datos (APIs) | Requests (Pexels API) | Extrae términos semánticos para recuperar recursos visuales de forma automatizada. |
+
 🎓 Propósito Educativo
 
     ⚠️ Nota legal: Este proyecto ha sido desarrollado exclusivamente con fines educativos y de investigación técnica en el ámbito del despliegue de soluciones de Inteligencia Artificial y Data Engineering dentro del marco formativo del bootcamp. Las herramientas, arquitecturas y claves de acceso empleadas se configuran bajo entornos controlados de simulación de prácticas profesionales.
